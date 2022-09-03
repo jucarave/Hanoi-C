@@ -56,18 +56,24 @@ int Game_getColumnIndex(char column) {
   return -1;
 }
 
-int Game_getTopDisk(int column) {
+int Game_getTopDiskSize(int column) {
   int index = 0;
-  int size = 0;
 
   while (columns[column][index].size == 0 && index < MAX_ROWS) {
     index++;
   }
 
-  size = columns[column][index].size;
-  Disk_empty(&columns[column][index]);
+  return columns[column][index].size;
+}
 
-  return size;
+void Game_clearTopDisk(int column) {
+  int index = 0;
+
+  while (columns[column][index].size == 0 && index < MAX_ROWS) {
+    index++;
+  }
+
+  Disk_empty(&columns[column][index]);
 }
 
 void Game_setTopDisk(int column, int size) {
@@ -80,9 +86,9 @@ void Game_setTopDisk(int column, int size) {
   Disk_set(&columns[column][index], size);
 }
 
-void Game_render() {
+void Game_loop() {
   char a, b;
-  int diskSize, columnIndexA, columnIndexB;
+  int diskSizeA, diskSizeB, columnIndexA, columnIndexB;
   
   Game_renderBoard();
   Game_getPlayerMovement(&a, &b);
@@ -91,17 +97,21 @@ void Game_render() {
   columnIndexB = Game_getColumnIndex(b);
 
   if (columnIndexA != -1 && columnIndexB != -1) {
-    diskSize = Game_getTopDisk(columnIndexA);
-    Game_setTopDisk(columnIndexB, diskSize);
+    diskSizeA = Game_getTopDiskSize(columnIndexA);
+    diskSizeB = Game_getTopDiskSize(columnIndexB);
+
+    if (diskSizeA < diskSizeB || diskSizeB == 0) {
+      Game_clearTopDisk(columnIndexA);
+      Game_setTopDisk(columnIndexB, diskSizeA);
+    } else {
+      printf("Cannot move the disk above a smaller one.\n");
+    }
   }
 }
 
-void Game_greet() {
-  printf("Welcome to Towers of Hanoi.\n");
-  printf("Enter your difficult level [1-3]: ");
-}
-
 int Game_setDifficulty() {
+  printf("Enter your difficult level [1-3]: ");
+
   if (scanf("%d", &difficulty) != 1 || difficulty < 1 || difficulty > 3) {
     printf("Error: Difficult should be between 1 and 3.");
     return -1;
@@ -136,6 +146,6 @@ void Game_start() {
   Game_initDisks();
 
   while (!gameOver) {
-    Game_render();
+    Game_loop();
   }
 }
