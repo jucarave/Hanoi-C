@@ -86,6 +86,10 @@ void Game_setTopDisk(int column, int size) {
   Disk_set(&columns[column][index], size);
 }
 
+bool Game_isFinished() {
+  return columns[2][baseY].size == 1;
+}
+
 void Game_loop() {
   char a, b;
   int diskSizeA, diskSizeB, columnIndexA, columnIndexB;
@@ -105,6 +109,13 @@ void Game_loop() {
       Game_setTopDisk(columnIndexB, diskSizeA);
     } else {
       printf("Cannot move the disk above a smaller one.\n");
+    }
+
+    if (Game_isFinished()) {
+      Game_renderBoard();
+      printf("========================================\n");
+      printf("Congratulations! You have won the game.\n");
+      printf("Now, get out and live your life.");
     }
   }
 }
@@ -137,15 +148,13 @@ void Game_initDisks() {
 }
 
 void Game_start() {
-  bool gameOver = false;
-
   printf("\n====================\n");
   printf("Your selected difficult is: %d\n", difficulty);
   printf("Let's begin.\n\n");
 
   Game_initDisks();
 
-  while (!gameOver) {
+  while (!Game_isFinished()) {
     Game_loop();
   }
 }
